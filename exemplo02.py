@@ -68,17 +68,35 @@ def desenhar_jogo():
 def desenhar_tela_inicial():
     tela.fill(PRETO)
     titulo = fonte_grande.render("Ping Pong", True, BRANCO)
-    botao = fonte.render("Play", True, BRANCO)
+    cor_botao = AZUL
+    botao_texto = fonte.render("Play", True, BRANCO)
+    botao_rect = pygame.Rect(
+        LARGURA // 2 - botao_texto.get_width() // 2 - 20,
+        200 - 10,
+        botao_texto.get_width() + 40,
+        botao_texto.get_height() + 20
+    )
+    pygame.draw.rect(tela, cor_botao, botao_rect, border_radius=10)
+    tela.blit(botao_texto, (LARGURA // 2 - botao_texto.get_width() // 2, 200))
     tela.blit(titulo, (LARGURA // 2 - titulo.get_width() // 2, 100))
-    tela.blit(botao, (LARGURA // 2 - botao.get_width() // 2, 200))
-    # Retorna o retângulo do botão para detecção de clique
-    return pygame.Rect(LARGURA // 2 - botao.get_width() // 2, 200, botao.get_width(), botao.get_height())
+    return botao_rect
 
 # Função para desenhar a tela de vencedor
 def desenhar_vencedor():
     tela.fill(PRETO)
     titulo = fonte_grande.render(f"Jogador {vencedor_final} venceu!", True, BRANCO)
-    tela.blit(titulo, (LARGURA // 2 - titulo.get_width() // 2, 150))
+    tela.blit(titulo, (LARGURA // 2 - titulo.get_width() // 2, 100))
+    cor_botao = AZUL
+    botao_texto = fonte.render("Reiniciar", True, BRANCO)
+    botao_rect = pygame.Rect(
+        LARGURA // 2 - botao_texto.get_width() // 2 - 20,
+        250 - 10,
+        botao_texto.get_width() + 40,
+        botao_texto.get_height() + 20
+    )
+    pygame.draw.rect(tela, cor_botao, botao_rect, border_radius=10)
+    tela.blit(botao_texto, (LARGURA // 2 - botao_texto.get_width() // 2, 250))
+    return botao_rect
 
 # Função para mover as raquetes
 def mover_raquete():
@@ -97,18 +115,12 @@ def mover_bola():
     global placar1, placar2
     bola.x += veloc_bola[0]
     bola.y += veloc_bola[1]
-
-    # Colisão com as raquetes
     if bola.colliderect(r1):
         veloc_bola[0] = abs(veloc_bola[0])
     if bola.colliderect(r2):
         veloc_bola[0] = -abs(veloc_bola[0])
-
-    # Colisão com teto e chão
     if bola.top <= 20 or bola.bottom >= ALTURA - 20:
         veloc_bola[1] = -veloc_bola[1]
-
-    # Pontuação
     if bola.left <= 20:
         placar2 += 1
         resetar_bola(1)
@@ -144,30 +156,28 @@ while rodando:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             rodando = False
-
-        # Detectar clique no botão "Play"
         if event.type == pygame.MOUSEBUTTONDOWN:
             if tela_inicial and botao_rect.collidepoint(event.pos):
                 tela_inicial = False
                 jogo_ativo = True
-                reiniciar_jogo()  # Reinicia o jogo ao clicar no botão "Play"
+                reiniciar_jogo()
+            elif not jogo_ativo and vencedor_final and botao_rect.collidepoint(event.pos):
+                reiniciar_jogo()
 
-    # Atualizar a tela
     if tela_inicial:
-        botao_rect = desenhar_tela_inicial()  # Atualiza o retângulo do botão "Play"
+        botao_rect = desenhar_tela_inicial()
     elif jogo_ativo:
         mover_raquete()
         mover_bola()
         desenhar_jogo()
-        # Verificar vencedor
         if placar1 >= 10:
             vencedor_final = "Azul"
             jogo_ativo = False
         elif placar2 >= 10:
             vencedor_final = "Vermelho"
             jogo_ativo = False
-    else:
-        desenhar_vencedor()
+    elif not jogo_ativo and vencedor_final:
+        botao_rect = desenhar_vencedor()
 
     pygame.display.update()
     relogio.tick(60)
