@@ -1,1 +1,1 @@
-# PingPongPython
+# Game PingPong em Python
